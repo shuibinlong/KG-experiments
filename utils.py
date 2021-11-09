@@ -21,7 +21,8 @@ def load_triples(file_path):
     else:
         with open(file_path, 'r') as f:
             data = f.readlines()
-            for line in data:
+            logging.info('%d triples loaded from %s.' % (len(data)-1, file_path))
+            for line in data[1:]:
                 record = line.strip().split(' ')
                 tuples.append(tuple(map(int, record)))
     return tuples
@@ -33,7 +34,7 @@ def load_ids(file_path):
     else:
         with open(file_path, 'r') as f:
             data = f.readlines()
-            logging.info("%d of entities/relations loaded from %s." % (len(data)-1, file_path))
+            logging.info('%d of entities/relations loaded from %s.' % (len(data)-1, file_path))
             for line in data[1:]:
                 record = line.strip()
                 try:

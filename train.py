@@ -2,7 +2,7 @@ import torch
 import logging 
 from tqdm import tqdm
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def train_conv(data, model, optimizer, device):
     full_loss = []
@@ -13,7 +13,7 @@ def train_conv(data, model, optimizer, device):
         r = batch_data[2].to(device)
         optimizer.zero_grad()
         loss, _ = model(h, r, t)
-        loss = loss.mean()
+        # loss = loss.mean()
         loss.backward()
         optimizer.step()
         full_loss.append(loss.item())

@@ -28,5 +28,5 @@
       "pretrain_model": null
     },
     "seed": 123,
-    "save_model_path": "./saved_models/"
+    "save_model_path": "./output"
   }
