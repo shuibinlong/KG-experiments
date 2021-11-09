@@ -2,7 +2,8 @@ import time
 import torch
 import argparse
 from torch.utils.data import DataLoader
-from train import train_conv
+from train import *
+from evaluation import *
 from models import *
 from utils import *
 from dataset import *
@@ -23,11 +24,14 @@ class Experiment:
         self.do_validation = config.get('do_validation')
         self.valid_steps = config.get('valid_steps')
         self.do_test = config.get('do_test')
+        self.save_model_path = config.get('save_model_path')
     
     def train_and_eval(self):
         train_loader = DataLoader(self.dataset.data['train'], self.train_conf.get('batch_size'), shuffle=True, drop_last=False)
         if self.dataset.data['valid']:
             valid_loader = DataLoader(self.dataset.data['valid'], self.train_conf.get('batch_size'), shuffle=False, drop_last=False)
+        if self.dataset.data['test']:
+            test_loader = DataLoader(self.dataset.data['test'], self.train_conf.get('batch_size'), shuffle=False, drop_last=False)
         for epoch in range(self.train_conf.get('epochs')):
             logging.info('Start training epoch: %d' % (epoch + 1))
             start_time = time.time()
@@ -41,13 +45,18 @@ class Experiment:
                 self.model.eval()
                 with torch.no_grad():
                     if self.model_name == 'ConvE':
-                        pass
+                        eval_results = eval_conv(valid_loader, self.model, self.device, self.dataset.data)
+                        output_eval_conv(eval_results, 'validation')
         if self.do_test:
             logging.info('Start evaluation on test data')
             self.model.eval()
             with torch.no_grad():
-                if self.model_name == 'convE':
-                    pass
+                if self.model_name == 'ConvE':
+                    eval_results = eval_conv(test_loader, self.model, self.device, self.dataset.data)
+                    output_eval_conv(eval_results, 'test')
+        if not os.path.exists(self.save_model_path):
+            os.makedirs(self.save_model_path)
+            logging.info('Created output directory {}'.format(self.save_model_path))
         torch.save(self.model, f'{self.save_model_path}/{self.model_name}_{self.dataset.name}.ckpt')
         logging.info('Finished! Model saved')
 

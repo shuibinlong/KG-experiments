@@ -13,8 +13,11 @@ class Dataset:
             'valid': self.read_valid(),
             'test': self.read_test(),
             'entity': self.read_entity(),
-            'relation': self.read_relation()
+            'relation': self.read_relation(),
+            'entity_relation': {}
         }
+
+        self.gen_entity_relation_multidata()
     
     def read_train(self):
         logging.info(' Loading training data '.center(100, '-'))
@@ -35,3 +38,21 @@ class Dataset:
     def read_relation(self):
         logging.info(' Loading realtion id '.center(100, '-'))
         return load_ids(os.path.join(self.path, 'data', self.name, 'relation2id.txt'))
+    
+    def gen_entity_relation_multidata(self):
+        logging.info(' Generating entity-relation dictionaries to accelerate evaluation process '.center(100, '-'))
+        full_data = self.data['train'] + self.data['valid'] + self.data['test']
+        self.data['entity_relation']['as_head'] = {}
+        self.data['entity_relation']['as_tail'] = {}
+        for i in self.data['entity']:
+            self.data['entity_relation']['as_head'][i] = {}
+            self.data['entity_relation']['as_tail'][i] = {}
+            for j in self.data['relation']:
+                self.data['entity_relation']['as_head'][i][j] = []
+                self.data['entity_relation']['as_tail'][i][j] = []
+        for triple in full_data:
+            h = triple[0]
+            t = triple[1]
+            r = triple[2]
+            self.data['entity_relation']['as_head'][h][r].append(t)
+            self.data['entity_relation']['as_tail'][t][r].append(h)
