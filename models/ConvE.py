@@ -69,9 +69,11 @@ class ConvELoss(BaseModel):
         self.label_smoothing = label_smoothing
         self.entity_cnt = entity_cnt
     
-    def forward(self, batch_p, batch_t):
+    def forward(self, batch_p, batch_t=None):
         batch_size = batch_p.shape[0]
-        batch_e = torch.zeros(batch_size, self.entity_cnt).to(self.device).scatter_(1, batch_t.view(-1, 1), 1)
-        batch_e = (1.0 - self.label_smoothing) * batch_e + self.label_smoothing / self.entity_cnt
-        loss =  self.loss(batch_p, batch_e) / batch_size
+        loss = None
+        if batch_t is not None:
+            batch_e = torch.zeros(batch_size, self.entity_cnt).to(self.device).scatter_(1, batch_t.view(-1, 1), 1)
+            batch_e = (1.0 - self.label_smoothing) * batch_e + self.label_smoothing / self.entity_cnt
+            loss =  self.loss(batch_p, batch_e) / batch_size
         return loss
