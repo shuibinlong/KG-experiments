@@ -1,11 +1,13 @@
 import torch
 import logging
 from .ConvE import ConvE
+from .ConvR import ConvR
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 model_dict = {
-    'ConvE': ConvE
+    'ConvE': ConvE,
+    'ConvR': ConvR
 }
 
 def init_model(config):
@@ -26,5 +28,5 @@ def init_model(config):
 
     model = model.to(device)
     logging.info(f'model loaded on {device}')
-
+    
     return model, device

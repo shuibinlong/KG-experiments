@@ -35,7 +35,7 @@ class Experiment:
         for epoch in range(self.train_conf.get('epochs')):
             logging.info('Start training epoch: %d' % (epoch + 1))
             start_time = time.time()
-            if self.model_name == 'ConvE':
+            if self.model_name in ['ConvE', 'ConvR']:
                 epoch_loss = train_conv(train_loader, self.model, self.optimizer, self.device)
             end_time = time.time()
             mean_loss = sum(epoch_loss) / len(epoch_loss)
@@ -44,14 +44,14 @@ class Experiment:
                 logging.info('Start evaluation of validation data')
                 self.model.eval()
                 with torch.no_grad():
-                    if self.model_name == 'ConvE':
+                    if self.model_name in ['ConvE', 'ConvR']:
                         eval_results = eval_conv(valid_loader, self.model, self.device, self.dataset.data)
                         output_eval_conv(eval_results, 'validation')
         if self.do_test:
             logging.info('Start evaluation on test data')
             self.model.eval()
             with torch.no_grad():
-                if self.model_name == 'ConvE':
+                if self.model_name in ['ConvE', 'ConvR']:
                     eval_results = eval_conv(test_loader, self.model, self.device, self.dataset.data)
                     output_eval_conv(eval_results, 'test')
         if not os.path.exists(self.save_model_path):

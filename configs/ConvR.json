@@ -1,0 +1,32 @@
+{
+    "dataset": "FB15K237",
+    "do_validation": true,
+    "do_test": true,
+    "valid_steps": 1,
+    "model_name": "ConvR",
+    "model_hyper_params": {
+      "emb_dim": 200,
+      "reshape": [20, 10],
+      "conv_out_channels": 100,
+      "conv_kernel_size": [3, 3],
+      "stride": 1,
+      "emb_dropout": 0.2,
+      "feature_map_dropout": 0.2,
+      "hidden_dropout": 0.3,
+      "label_smoothing": 0.1,
+      "use_bias": true
+    },
+    "optimizer": {
+      "algorithm": "adam",
+      "lr": 0.003,
+      "weight_decay": 0.0
+    },
+    "training": {
+      "batch_size": 128,
+      "epochs": 5,
+      "seed": 123,
+      "pretrain_model": null
+    },
+    "seed": 123,
+    "save_model_path": "./output"
+  }
