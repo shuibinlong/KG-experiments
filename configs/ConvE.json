@@ -22,7 +22,7 @@
       "weight_decay": 0.0
     },
     "training": {
-      "batch_size": 1024,
+      "batch_size": 128,
       "epochs": 5,
       "seed": 123,
       "pretrain_model": null

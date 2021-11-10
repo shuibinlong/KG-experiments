@@ -1,6 +1,6 @@
 import torch
-from torch.nn import Parameter
 import torch.nn.functional as F
+from torch.nn.parameter import Parameter
 from .BaseModel import BaseModel
 
 
@@ -21,8 +21,6 @@ class ConvE(BaseModel):
         self.reshape = kwargs.get('reshape')
         self.kernel_size = kwargs.get('conv_kernel_size')
         self.stride = kwargs.get('stride')
-        self.loss = ConvELoss(self.device, kwargs.get('label_smoothing'), self.entity_cnt)
-        self.init()
         # convolution layer, in_channels=1, out_channels=32, kernel_size=(3, 3), stride=1, padding=0
         self.conv1 = torch.nn.Conv2d(1, self.conv_out_channels, self.kernel_size, 1, 0, bias=kwargs.get('use_bias'))
         self.bn0 = torch.nn.BatchNorm2d(1)  # batch normalization over a 4D input
@@ -33,6 +31,8 @@ class ConvE(BaseModel):
         filtered_w = (self.reshape[1] - self.kernel_size[1]) // self.stride + 1
         fc_length = self.conv_out_channels * filtered_h * filtered_w
         self.fc = torch.nn.Linear(fc_length, self.emb_dim)
+        self.loss = ConvELoss(self.device, kwargs.get('label_smoothing'), self.entity_cnt)
+        self.init()
 
     def init(self):
         torch.nn.init.xavier_normal_(self.E.weight.data)

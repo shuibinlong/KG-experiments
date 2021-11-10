@@ -2,7 +2,7 @@ import torch.nn as nn
 
 class BaseModel(nn.Module):
     def __init__(self, config=None):
-        super(BaseModel, self).__init__()
+        super().__init__()
         self.config = config
 
     @classmethod
