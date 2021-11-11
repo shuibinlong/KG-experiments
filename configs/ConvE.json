@@ -2,7 +2,7 @@
     "dataset": "FB15K237",
     "do_validation": true,
     "do_test": true,
-    "valid_steps": 1,
+    "valid_steps": 100,
     "model_name": "ConvE",
     "model_hyper_params": {
       "emb_dim": 200,
@@ -23,7 +23,7 @@
     },
     "training": {
       "batch_size": 128,
-      "epochs": 5,
+      "epochs": 1000,
       "seed": 123,
       "pretrain_model": null
     },
