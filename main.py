@@ -8,6 +8,8 @@ from models import *
 from utils import *
 from dataset import *
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 class Experiment:
     def __init__(self, config):
         self.model_name = config.get('model_name')
