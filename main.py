@@ -39,8 +39,9 @@ class Experiment:
                 epoch_loss = train_conv(train_loader, self.model, self.optimizer, self.device)
             end_time = time.time()
             mean_loss = sum(epoch_loss) / len(epoch_loss)
-            logging.info('Epoch id: %d - training loss: %.6f - training time: %.2f seconds' % (epoch + 1, mean_loss, end_time - start_time))
+            print('[Epoch #%d] training loss: %.6f - training time: %.2f seconds' % (epoch + 1, mean_loss, end_time - start_time))
             if self.do_validation and (epoch + 1) % self.valid_steps == 0:
+                print(f'--- epoch #{epoch} valid ---')
                 logging.info('Start evaluation of validation data')
                 self.model.eval()
                 with torch.no_grad():
@@ -48,6 +49,7 @@ class Experiment:
                         eval_results = eval_conv(valid_loader, self.model, self.device, self.dataset.data)
                         output_eval_conv(eval_results, 'validation')
         if self.do_test:
+            print(f'--- test ---')
             logging.info('Start evaluation on test data')
             self.model.eval()
             with torch.no_grad():

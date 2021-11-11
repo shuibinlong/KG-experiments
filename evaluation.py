@@ -54,5 +54,5 @@ def output_eval_conv(results, data_name):
     r_ranks = 1.0 / ranks  # compute reciprocal rank
 
     # print Hits@10, Hits@3, Hits@1, MR (mean rank), and MRR (mean reciprocal rank)
-    logging.info('For %s data: Hits@10=%.4f - Hits@3=%.4f - Hits@1=%.4f' % (data_name, hits[9].mean(), hits[2].mean(), hits[0].mean()))
-    logging.info('For %s data: MR=%.4f - MRR=%.4f' % (data_name, ranks.mean(), r_ranks.mean()))
+    print('For %s data: Hits@10=%.4f - Hits@3=%.4f - Hits@1=%.4f' % (data_name, hits[9].mean(), hits[2].mean(), hits[0].mean()))
+    print('For %s data: MR=%.4f - MRR=%.4f' % (data_name, ranks.mean(), r_ranks.mean()))
