@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 class Experiment:
     def __init__(self, config):
         self.model_name = config.get('model_name')
-        self.dataset = Dataset(config.get('dataset'))
+        self.dataset = Dataset(config.get('dataset'), config.get('neg_ratio'))
         config['entity_cnt'] = len(self.dataset.data['entity'])
         config['relation_cnt'] = len(self.dataset.data['relation'])
         self.model, self.device = init_model(config)

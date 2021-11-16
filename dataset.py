@@ -1,11 +1,14 @@
 import os
+import random
 import logging
+import numpy as np
+
 from utils import load_triples, load_ids
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class Dataset:
-    def __init__(self, dataset):
+    def __init__(self, dataset, neg_ratio):
         self.path = os.getcwd()
         self.name = dataset
         self.data = {
@@ -18,6 +21,9 @@ class Dataset:
         }
 
         self.gen_entity_relation_multidata()
+
+        if neg_ratio > 0:
+            self.data['train'] = self.neg_sampling(neg_ratio)
     
     def read_train(self):
         logging.info(' Loading training data '.center(100, '-'))
@@ -56,3 +62,26 @@ class Dataset:
             r = triple[2]
             self.data['entity_relation']['as_head'][h][r].append(t)
             self.data['entity_relation']['as_tail'][t][r].append(h)
+
+    def neg_sampling(self, neg_ratio):
+        logging.info(' Sampling corrupted triples '.center(100, '-'))
+        train_data = []
+        entity_set = set(self.data['entity'])
+        entity_relation_as_head = set(self.data['entity_relation']['as_head'])
+        entity_relation_as_tail = set(self.data['entity_relation']['as_tail'])
+        for triple in self.data['train']:
+            train_data.append([*triple, 1]) # positive
+            h_neg = triple[0]
+            t_neg = triple[1]
+            r = triple[2]
+            used = {'head': set(), 'tail': set()}
+            for _ in range(neg_ratio):
+                # 1/2 probability to replace the head entity
+                if np.random.binomial(1, 0.5): # sample a negative head entity
+                    h_neg = random.sample(entity_set - entity_relation_as_head[t_neg][r] - used['head'], 1)[0]
+                    used['head'].add(h_neg)
+                else:  # sample a negative tail entity
+                    t_neg = random.sample(entity_set - entity_relation_as_tail[h_neg][r] - used['tail'], 1)[0]
+                    used['tail'].add(t_neg)
+                train_data.append([h_neg, t_neg, r, 0]) # negative
+        return train_data
