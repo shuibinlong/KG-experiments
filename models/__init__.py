@@ -2,12 +2,14 @@ import torch
 import logging
 from .ConvE import ConvE
 from .ConvR import ConvR
+from .ConvKB import ConvKB
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 model_dict = {
     'ConvE': ConvE,
-    'ConvR': ConvR
+    'ConvR': ConvR,
+    'ConvKB': ConvKB
 }
 
 def init_model(config):

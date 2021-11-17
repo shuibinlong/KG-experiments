@@ -18,6 +18,12 @@ class Experiment:
         config['relation_cnt'] = len(self.dataset.data['relation'])
         self.model, self.device = init_model(config)
         self.train_conf = config.get('training')
+        if self.model_name in ['ConvE', 'ConvR']:
+            self.train_func = train_convX
+        elif self.model_name in ['ConvKB']:
+            self.train_func = train_convKB
+        else:
+            logging.error(f'Could not find any training function for model={self.model_name}')
         opt_conf = config.get('optimizer')
         if opt_conf.get('algorithm', 'adam') == 'adam':
             self.optimizer = torch.optim.Adam(self.model.parameters(), lr=opt_conf.get('lr'), weight_decay=opt_conf.get('weight_decay'))
@@ -37,8 +43,7 @@ class Experiment:
         for epoch in range(self.train_conf.get('epochs')):
             logging.info('Start training epoch: %d' % (epoch + 1))
             start_time = time.time()
-            if self.model_name in ['ConvE', 'ConvR']:
-                epoch_loss = train_conv(train_loader, self.model, self.optimizer, self.device)
+            epoch_loss = self.train_func(train_loader, self.model, self.optimizer, self.device)
             end_time = time.time()
             mean_loss = sum(epoch_loss) / len(epoch_loss)
             print('[Epoch #%d] training loss: %.6f - training time: %.2f seconds' % (epoch + 1, mean_loss, end_time - start_time))

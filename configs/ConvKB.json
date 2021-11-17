@@ -1,0 +1,31 @@
+{
+    "dataset": "FB15K237",
+    "do_validation": true,
+    "do_test": true,
+    "valid_steps": 100,
+    "model_name": "ConvKB",
+    "model_hyper_params": {
+      "emb_dim": 200,
+      "conv_out_channels": 64,
+      "conv_kernel_size": [3, 1],
+      "stride": 1,
+      "emb_dropout": 0.2,
+      "feature_map_dropout": 0.2,
+      "hidden_dropout": 0.3,
+      "use_bias": true
+    },
+    "optimizer": {
+      "algorithm": "adam",
+      "lr": 0.003,
+      "weight_decay": 1e-5
+    },
+    "training": {
+      "batch_size": 128,
+      "epochs": 1000,
+      "seed": 123,
+      "pretrain_model": null
+    },
+    "neg_ratio": 1,
+    "seed": 123,
+    "save_model_path": "./output"
+  }
