@@ -70,17 +70,11 @@ class Dataset:
         entity_set = set(self.data['entity'])
         for triple in tqdm(self.data['train'], total=len(self.data['train'])):
             train_data.append([*triple, 1]) # positive
-            h_neg = triple[0]
-            t_neg = triple[1]
-            r = triple[2]
-            used = {'head': set(), 'tail': set()}
-            for _ in range(neg_ratio):
-                # 1/2 probability to replace the head entity
-                if np.random.binomial(1, 0.5): # sample a negative head entity
-                    h_neg = random.sample(entity_set - set(self.data['entity_relation']['as_head'][t_neg][r]) - used['head'], 1)[0]
-                    used['head'].add(h_neg)
-                else:  # sample a negative tail entity
-                    t_neg = random.sample(entity_set - set(self.data['entity_relation']['as_tail'][h_neg][r]) - used['tail'], 1)[0]
-                    used['tail'].add(t_neg)
-                train_data.append([h_neg, t_neg, r, 0]) # negative
+            [h, t, r] = triple
+            h_neg_sampling = random.sample(entity_set - set(self.data['entity_relation']['as_head'][t][r]), (neg_ratio + 1) // 2)
+            t_neg_sampling = random.sample(entity_set - set(self.data['entity_relation']['as_tail'][h][r]), (neg_ratio + 1) // 2)
+            for h_neg in h_neg_sampling:
+                train_data.append([h_neg, t, r, -1])
+            for t_neg in t_neg_sampling:
+                train_data.append([h, t_neg, r, -1])
         return train_data
