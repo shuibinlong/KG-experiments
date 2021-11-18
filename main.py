@@ -25,7 +25,7 @@ class Experiment:
         elif self.model_name in ['ConvKB']:
             self.train_func = train_convKB
             self.eval_func = eval_convKB
-            self.output_func = eval_convKB
+            self.output_func = output_eval_convKB
         else:
             logging.error(f'Could not find any training function for model={self.model_name}')
         opt_conf = config.get('optimizer')
