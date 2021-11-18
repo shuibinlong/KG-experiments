@@ -20,8 +20,12 @@ class Experiment:
         self.train_conf = config.get('training')
         if self.model_name in ['ConvE', 'ConvR']:
             self.train_func = train_convX
+            self.eval_func = eval_convX
+            self.output_func = output_eval_convX
         elif self.model_name in ['ConvKB']:
             self.train_func = train_convKB
+            self.eval_func = eval_convKB
+            self.output_func = eval_convKB
         else:
             logging.error(f'Could not find any training function for model={self.model_name}')
         opt_conf = config.get('optimizer')
@@ -52,17 +56,15 @@ class Experiment:
                 logging.info('Start evaluation of validation data')
                 self.model.eval()
                 with torch.no_grad():
-                    if self.model_name in ['ConvE', 'ConvR']:
-                        eval_results = eval_conv(valid_loader, self.model, self.device, self.dataset.data)
-                        output_eval_conv(eval_results, 'validation')
+                    eval_results = self.eval_func(valid_loader, self.model, self.device, self.dataset.data)
+                    self.output_func(eval_results, 'validation')
         if self.do_test:
             print(f'--- test ---')
             logging.info('Start evaluation on test data')
             self.model.eval()
             with torch.no_grad():
-                if self.model_name in ['ConvE', 'ConvR']:
-                    eval_results = eval_conv(test_loader, self.model, self.device, self.dataset.data)
-                    output_eval_conv(eval_results, 'test')
+                eval_results = self.eval_func(test_loader, self.model, self.device, self.dataset.data)
+                self.output_func(eval_results, 'test')
         if not os.path.exists(self.save_model_path):
             os.makedirs(self.save_model_path)
             logging.info('Created output directory {}'.format(self.save_model_path))

@@ -32,7 +32,7 @@ class ConvKB(BaseModel):
         torch.nn.init.xavier_normal_(self.E.weight.data)
         torch.nn.init.xavier_normal_(self.R.weight.data)
 
-    def forward(self, batch_h, batch_r, batch_t, batch_y):
+    def forward(self, batch_h, batch_r, batch_t, batch_y=None):
         batch_size = batch_h.size(0)
         h = self.E(batch_h).unsqueeze(1)
         r = self.R(batch_r).unsqueeze(1)
@@ -55,7 +55,9 @@ class ConvKBLoss(BaseModel):
     def __init__(self):
         super().__init__()
     
-    def forward(self, predict, label):
-        y = F.softplus(predict * label)
-        loss = torch.mean(y)
+    def forward(self, predict, label=None):
+        loss = None
+        if label is not None:
+            y = F.softplus(predict * label)
+            loss = torch.mean(y)
         return loss
