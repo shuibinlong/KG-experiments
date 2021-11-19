@@ -52,7 +52,7 @@ class Experiment:
             mean_loss = sum(epoch_loss) / len(epoch_loss)
             print('[Epoch #%d] training loss: %.6f - training time: %.2f seconds' % (epoch + 1, mean_loss, end_time - start_time))
             if self.do_validation and (epoch + 1) % self.valid_steps == 0:
-                print(f'--- epoch #{epoch} valid ---')
+                print(f'--- epoch #{epoch + 1} valid ---')
                 logging.info('Start evaluation of validation data')
                 self.model.eval()
                 with torch.no_grad():
