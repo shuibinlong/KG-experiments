@@ -162,21 +162,21 @@ def output_eval_convKB(results, data_name):
 
     # print Hits@10, Hits@3, Hits@1, MR (mean rank), and MRR (mean reciprocal rank) respectively for
     # replacing the head/tail entity, filtered/raw
-    logging.info('Evaluation results for %s data by replacing the head entity: ' % data_name)
-    logging.info('- filtered: Hits@10=%.4f - Hits@3=%.4f - Hits@1=%.4f' %
+    print('Evaluation results for %s data by replacing the head entity: ' % data_name)
+    print('- filtered: Hits@10=%.4f - Hits@3=%.4f - Hits@1=%.4f' %
                  (hits_h_filtered[9].mean(), hits_h_filtered[2].mean(), hits_h_filtered[0].mean()))
-    logging.info('- filtered: MR=%.4f - MRR=%.4f' % (ranks_h_filtered.mean(), r_ranks_h_filtered.mean()))
-    logging.info('- raw: Hits@10=%.4f - Hits@3=%.4f - Hits@1=%.4f' %
+    print('- filtered: MR=%.4f - MRR=%.4f' % (ranks_h_filtered.mean(), r_ranks_h_filtered.mean()))
+    print('- raw: Hits@10=%.4f - Hits@3=%.4f - Hits@1=%.4f' %
                  (hits_h_raw[9].mean(), hits_h_raw[2].mean(), hits_h_raw[0].mean()))
-    logging.info('- raw: MR=%.4f - MRR=%.4f' % (ranks_h_raw.mean(), r_ranks_h_raw.mean()))
+    print('- raw: MR=%.4f - MRR=%.4f' % (ranks_h_raw.mean(), r_ranks_h_raw.mean()))
 
-    logging.info('Evaluation results for %s data by replacing the tail entity: ' % data_name)
-    logging.info('- filtered: Hits@10=%.4f - Hits@3=%.4f - Hits@1=%.4f' %
+    print('Evaluation results for %s data by replacing the tail entity: ' % data_name)
+    print('- filtered: Hits@10=%.4f - Hits@3=%.4f - Hits@1=%.4f' %
                  (hits_t_filtered[9].mean(), hits_t_filtered[2].mean(), hits_t_filtered[0].mean()))
-    logging.info('- filtered: MR=%.4f - MRR=%.4f' % (ranks_t_filtered.mean(), r_ranks_t_filtered.mean()))
-    logging.info('- raw: Hits@10=%.4f - Hits@3=%.4f - Hits@1=%.4f' %
+    print('- filtered: MR=%.4f - MRR=%.4f' % (ranks_t_filtered.mean(), r_ranks_t_filtered.mean()))
+    print('- raw: Hits@10=%.4f - Hits@3=%.4f - Hits@1=%.4f' %
                  (hits_t_raw[9].mean(), hits_t_raw[2].mean(), hits_t_raw[0].mean()))
-    logging.info('- raw: MR=%.4f - MRR=%.4f' % (ranks_t_raw.mean(), r_ranks_t_raw.mean()))
+    print('- raw: MR=%.4f - MRR=%.4f' % (ranks_t_raw.mean(), r_ranks_t_raw.mean()))
 
 
 def head_corrupt_score(triple, model, device, ent_data):
@@ -191,7 +191,7 @@ def head_corrupt_score(triple, model, device, ent_data):
     test_r = triple[2].repeat(ent_count).to(device)  # keep the relation
     _, score = model.forward(test_h, test_r, test_t)  # score is of size ent_count
     # score_sort_idx = sorted(range(len(score)), key=score.__getitem__)  # index of the sorted score
-    return score
+    return -score
 
 
 def tail_corrupt_score(triple, model, device, ent_data):
@@ -206,4 +206,4 @@ def tail_corrupt_score(triple, model, device, ent_data):
     test_r = triple[2].repeat(ent_count).to(device)  # keep the relation
     _, score = model.forward(test_h, test_r, test_t)
     # score_sort_idx = sorted(range(len(score)), key=score.__getitem__)
-    return score
+    return -score
