@@ -48,16 +48,16 @@ class ConvKB(BaseModel):
         x = self.feature_map_drop(x)
         x = x.view(batch_size, -1)
         x = self.fc(x)
-        y = -x.view(-1)
+        y = x.view(-1)
         return self.loss(y, batch_y), y
 
 class ConvKBLoss(BaseModel):
     def __init__(self):
         super().__init__()
+        self.loss = torch.nn.SoftMarginLoss()
     
     def forward(self, predict, label=None):
         loss = None
         if label is not None:
-            y = F.softplus(predict * label)
-            loss = torch.mean(y)
+            loss = self.loss(predict, label)
         return loss

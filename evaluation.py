@@ -191,7 +191,7 @@ def head_corrupt_score(triple, model, device, ent_data):
     test_r = triple[2].repeat(ent_count).to(device)  # keep the relation
     _, score = model.forward(test_h, test_r, test_t)  # score is of size ent_count
     # score_sort_idx = sorted(range(len(score)), key=score.__getitem__)  # index of the sorted score
-    return -score
+    return score
 
 
 def tail_corrupt_score(triple, model, device, ent_data):
@@ -206,4 +206,4 @@ def tail_corrupt_score(triple, model, device, ent_data):
     test_r = triple[2].repeat(ent_count).to(device)  # keep the relation
     _, score = model.forward(test_h, test_r, test_t)
     # score_sort_idx = sorted(range(len(score)), key=score.__getitem__)
-    return -score
+    return score
