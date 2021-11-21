@@ -19,7 +19,7 @@ class ConvKB(BaseModel):
         self.conv_out_channels = kwargs.get('conv_out_channels')
         self.kernel_size = kwargs.get('conv_kernel_size')
         self.stride = kwargs.get('stride')
-        self.conv1 = torch.nn.Conv2d(1, self.conv_out_channels, self.kernel_size, 1, 0, bias=kwargs.get('use_bias'))
+        self.conv1 = torch.nn.Conv2d(1, self.conv_out_channels, self.kernel_size, self.stride, 0, bias=kwargs.get('use_bias'))
         self.bn0 = torch.nn.BatchNorm2d(1)  # batch normalization over a 4D input
         self.bn1 = torch.nn.BatchNorm2d(self.conv_out_channels)
         filtered_h = (3 - self.kernel_size[0]) // self.stride + 1
