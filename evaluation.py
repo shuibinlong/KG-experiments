@@ -87,8 +87,8 @@ def eval_convKB(eval_data, model, device, data):
             # get the score of all corrupted triples by replacing the tail entity by each of the entities
             t_score = tail_corrupt_score(triple, model, device, data['entity'])  # h_score: (ent_count)
 
-            _, h_score_idx = torch.sort(h_score, descending=False)
-            _, t_score_idx = torch.sort(t_score, descending=False)
+            _, h_score_idx = torch.sort(h_score, descending=True)
+            _, t_score_idx = torch.sort(t_score, descending=True)
             h_score_idx = h_score_idx.cpu().numpy()
             t_score_idx = t_score_idx.cpu().numpy()
 
@@ -100,19 +100,19 @@ def eval_convKB(eval_data, model, device, data):
             # get all head entities that form triples with r as the tail entity and r as the relation
             filter_h = ent_rel_multi_t[t][r]
             score_value_h = h_score[h].item()
-            h_score_max = h_score.max().item()
-            h_score[filter_h] = h_score_max + 1.0
+            h_score_min = h_score.min().item()
+            h_score[filter_h] = h_score_min - 1.0
             h_score[h] = score_value_h
 
             # get all tail entities that form triples with h as the head entity and r as the relation
             filter_t = ent_rel_multi_h[h][r]
             score_value_t = t_score[t].item()
-            t_score_max = t_score.max().item()
-            t_score[filter_t] = t_score_max + 1.0
+            t_score_min = t_score.min().item()
+            t_score[filter_t] = t_score_min - 1.0
             t_score[t] = score_value_t
 
-            _, h_score_idx = torch.sort(h_score, descending=False)
-            _, t_score_idx = torch.sort(t_score, descending=False)
+            _, h_score_idx = torch.sort(h_score, descending=True)
+            _, t_score_idx = torch.sort(t_score, descending=True)
             h_score_idx = h_score_idx.cpu().numpy()
             t_score_idx = t_score_idx.cpu().numpy()
 
