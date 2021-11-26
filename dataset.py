@@ -61,8 +61,8 @@ class Dataset:
             h = triple[0]
             t = triple[1]
             r = triple[2]
-            self.data['entity_relation']['as_head'][h][r].append(t)
-            self.data['entity_relation']['as_tail'][t][r].append(h)
+            self.data['entity_relation']['as_head'][t][r].append(h)
+            self.data['entity_relation']['as_tail'][h][r].append(t)
 
     def neg_sampling(self, neg_ratio):
         logging.info(' Sampling corrupted triples '.center(100, '-'))
@@ -70,7 +70,7 @@ class Dataset:
         entity_set = set(self.data['entity'])
         for triple in tqdm(self.data['train'], total=len(self.data['train'])):
             train_data.append([*triple, 1]) # positive
-            [h, t, r] = triple
+            h, t, r = triple
             h_neg_sampling = random.sample(entity_set - set(self.data['entity_relation']['as_head'][t][r]), (neg_ratio + 1) // 2)
             t_neg_sampling = random.sample(entity_set - set(self.data['entity_relation']['as_tail'][h][r]), (neg_ratio + 1) // 2)
             for h_neg in h_neg_sampling:

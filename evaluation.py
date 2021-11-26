@@ -9,7 +9,7 @@ def eval_convX(eval_data, model, device, data):
     # TODO: add reverse relations as https://github.com/TimDettmers/ConvE/ in training and evaluation
     hits = []
     ranks = []
-    ent_rel_multi_h = data['entity_relation']['as_head']
+    ent_rel_multi_t = data['entity_relation']['as_tail']
     for _ in range(10):  # need at most Hits@10
         hits.append([])
 
@@ -23,7 +23,7 @@ def eval_convX(eval_data, model, device, data):
         # true (head, tail) entity pair in train/valid/test data
         for i in range(eval_h.size(0)):
             # get all tail entities that form triples with eval_h[i] as the head entity and eval_r[i] as the relation
-            filter_t = ent_rel_multi_h[eval_h[i].item()][eval_r[i].item()]
+            filter_t = ent_rel_multi_t[eval_h[i].item()][eval_r[i].item()]
 
             pred_value = pred[i][eval_t[i].item()].item()
             pred[i][filter_t] = 0.0
@@ -98,14 +98,14 @@ def eval_convKB(eval_data, model, device, data):
             # need to filter out the entities ranking above the target entity that form a
             # true (head, tail) entity pair in train/valid/test data
             # get all head entities that form triples with r as the tail entity and r as the relation
-            filter_h = ent_rel_multi_t[t][r]
+            filter_h = ent_rel_multi_h[t][r]
             score_value_h = h_score[h].item()
             h_score_min = h_score.min().item()
             h_score[filter_h] = h_score_min - 1.0
             h_score[h] = score_value_h
 
             # get all tail entities that form triples with h as the head entity and r as the relation
-            filter_t = ent_rel_multi_h[h][r]
+            filter_t = ent_rel_multi_t[h][r]
             score_value_t = t_score[t].item()
             t_score_min = t_score.min().item()
             t_score[filter_t] = t_score_min - 1.0
