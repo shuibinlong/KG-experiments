@@ -27,6 +27,7 @@ class ConvKB(BaseModel):
         fc_length = self.conv_out_channels * filtered_h * filtered_w
         self.fc = torch.nn.Linear(fc_length, 1, bias=False)
         self.loss = ConvKBLoss()
+        self.init()
 
     def init(self):
         torch.nn.init.xavier_normal_(self.E.weight.data)
@@ -54,7 +55,7 @@ class ConvKB(BaseModel):
 class ConvKBLoss(BaseModel):
     def __init__(self):
         super().__init__()
-        self.loss = torch.nn.SoftMarginLoss()
+        self.loss = torch.nn.SoftMarginLoss(reduction='sum')
     
     def forward(self, predict, label=None):
         loss = None
