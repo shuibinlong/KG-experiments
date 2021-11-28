@@ -2,11 +2,11 @@
     "dataset": "FB15K237",
     "do_validation": true,
     "do_test": true,
-    "valid_steps": 50,
+    "valid_steps": 200,
     "model_name": "ConvKB",
     "model_hyper_params": {
-        "emb_dim": 200,
-        "conv_out_channels": 64,
+        "emb_dim": 100,
+        "conv_out_channels": 128,
         "conv_kernel_size": [3, 1],
         "stride": 1,
         "emb_dropout": 0.2,
@@ -21,7 +21,7 @@
     },
     "training": {
         "batch_size": 128,
-        "epochs": 100,
+        "epochs": 1000,
         "seed": 123,
         "pretrain_model": null
     },
