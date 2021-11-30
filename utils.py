@@ -12,8 +12,8 @@ def load_json_config(config_path):
     with open(config_path, 'r') as f:
         config = json.load(f)
     config['device'] = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    if not config.get('neg_ratio'):
-        config['neg_ratio'] = 0
+    if not config.get('training').get('neg_ratio'):
+        config['training']['neg_ratio'] = 0
     return config
 
 def load_triples(file_path):

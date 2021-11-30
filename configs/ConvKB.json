@@ -22,10 +22,13 @@
     "training": {
         "batch_size": 128,
         "epochs": 1000,
+        "neg_ratio": 10,
+        "batch_sample": true,
+        "shuffle": true,
         "seed": 123,
         "pretrain_model": null
     },
-    "neg_ratio": 10,
+    "eval_desc": true,
     "seed": 123,
     "save_model_path": "./output"
 }

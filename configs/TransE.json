@@ -2,19 +2,14 @@
     "dataset": "FB15K237",
     "do_validation": true,
     "do_test": true,
-    "valid_steps": 100,
-    "model_name": "ConvE",
+    "valid_steps": 1,
+    "model_name": "TransE",
     "model_hyper_params": {
       "emb_dim": 200,
-      "reshape": [20, 10],
-      "conv_out_channels": 32,
-      "conv_kernel_size": [3, 3],
-      "stride": 1,
+      "margin": 0.5,
+      "p_norm": 2,
       "emb_dropout": 0.2,
-      "feature_map_dropout": 0.2,
-      "hidden_dropout": 0.3,
-      "label_smoothing": 0.1,
-      "use_bias": true
+      "hidden_dropout": 0.3
     },
     "optimizer": {
       "algorithm": "adam",
@@ -22,12 +17,15 @@
       "weight_decay": 0.0
     },
     "training": {
-      "batch_size": 128,
-      "epochs": 1000,
-      "shuffle": true,
+      "batch_size": 1024,
+      "epochs": 5,
+      "shuffle": false,
+      "neg_ratio": 1,
+      "batch_sample": false,
       "seed": 123,
       "pretrain_model": null
     },
+    "eval_desc": false,
     "seed": 123,
     "save_model_path": "./output"
   }

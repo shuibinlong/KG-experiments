@@ -3,13 +3,15 @@ import logging
 from .ConvE import ConvE
 from .ConvR import ConvR
 from .ConvKB import ConvKB
+from .TransE import TransE
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 model_dict = {
     'ConvE': ConvE,
     'ConvR': ConvR,
-    'ConvKB': ConvKB
+    'ConvKB': ConvKB,
+    'TransE': TransE
 }
 
 def init_model(config):

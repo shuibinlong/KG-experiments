@@ -9,7 +9,7 @@ from utils import load_triples, load_ids
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class Dataset:
-    def __init__(self, dataset, neg_ratio):
+    def __init__(self, dataset, kwargs):
         self.path = os.getcwd()
         self.name = dataset
         self.data = {
@@ -23,8 +23,8 @@ class Dataset:
 
         self.gen_entity_relation_multidata()
 
-        if neg_ratio > 0:
-            self.data['train'] = self.neg_sampling(neg_ratio)
+        if kwargs.get('neg_ratio') > 0:
+            self.data['train'] = self.neg_sampling(kwargs.get('neg_ratio'), kwargs.get('batch_sample'))
     
     def read_train(self):
         logging.info(' Loading training data '.center(100, '-'))
@@ -64,15 +64,26 @@ class Dataset:
             self.data['entity_relation']['as_head'][t][r].append(h)
             self.data['entity_relation']['as_tail'][h][r].append(t)
 
-    def neg_sampling(self, neg_ratio):
+    def neg_sampling(self, neg_ratio, batching):
         logging.info(' Sampling corrupted triples '.center(100, '-'))
         train_data = []
         entity_set = set(self.data['entity'])
         for triple in tqdm(self.data['train'], total=len(self.data['train'])):
             train_data.append([*triple, 1]) # positive
             h, t, r = triple
-            h_neg_sampling = random.sample(entity_set - set(self.data['entity_relation']['as_head'][t][r]), (neg_ratio + 1) // 2)
-            t_neg_sampling = random.sample(entity_set - set(self.data['entity_relation']['as_tail'][h][r]), (neg_ratio + 1) // 2)
+            if batching:
+                h_neg_sampling = random.sample(entity_set - set(self.data['entity_relation']['as_head'][t][r]), (neg_ratio + 1) // 2)
+                t_neg_sampling = random.sample(entity_set - set(self.data['entity_relation']['as_tail'][h][r]), (neg_ratio + 1) // 2)
+            else:
+                h_neg_sampling = []
+                t_neg_sampling = []
+                for _ in range(neg_ratio):
+                    if np.random.binomial(1, 0.5):
+                        h_neg = random.sample(entity_set - set(self.data['entity_relation']['as_head'][t][r]), 1)[0]
+                        h_neg_sampling.append(h_neg)
+                    else:
+                        t_neg = random.sample(entity_set - set(self.data['entity_relation']['as_tail'][h][r]), 1)[0]
+                        t_neg_sampling.append(t_neg)
             for h_neg in h_neg_sampling:
                 train_data.append([h_neg, t, r, -1])
             for t_neg in t_neg_sampling:

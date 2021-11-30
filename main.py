@@ -13,19 +13,24 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 class Experiment:
     def __init__(self, config):
         self.model_name = config.get('model_name')
-        self.dataset = Dataset(config.get('dataset'), config.get('neg_ratio'))
+        self.train_conf = config.get('training')
+        self.eval_desc = config.get('eval_desc')
+        data_args = {
+            'neg_ratio': self.train_conf.get('neg_ratio'),
+            'batch_sample': self.train_conf.get('batch_sample')
+        }
+        self.dataset = Dataset(config.get('dataset'), data_args)
         config['entity_cnt'] = len(self.dataset.data['entity'])
         config['relation_cnt'] = len(self.dataset.data['relation'])
         self.model, self.device = init_model(config)
-        self.train_conf = config.get('training')
         if self.model_name in ['ConvE', 'ConvR']:
-            self.train_func = train_convX
-            self.eval_func = eval_convX
-            self.output_func = output_eval_convX
-        elif self.model_name in ['ConvKB']:
-            self.train_func = train_convKB
-            self.eval_func = eval_convKB
-            self.output_func = output_eval_convKB
+            self.train_func = train_without_label
+            self.eval_func = eval_for_tail
+            self.output_func = output_eval_tail
+        elif self.model_name in ['ConvKB', 'TransE']:
+            self.train_func = train_with_label
+            self.eval_func = eval_for_both
+            self.output_func = output_eval_both
         else:
             logging.error(f'Could not find any training function for model={self.model_name}')
         opt_conf = config.get('optimizer')
@@ -39,7 +44,7 @@ class Experiment:
         self.save_model_path = config.get('save_model_path')
     
     def train_and_eval(self):
-        train_loader = DataLoader(self.dataset.data['train'], self.train_conf.get('batch_size'), shuffle=True, drop_last=False)
+        train_loader = DataLoader(self.dataset.data['train'], self.train_conf.get('batch_size'), shuffle=self.train_conf.get("shuffle"), drop_last=False)
         if self.dataset.data['valid']:
             valid_loader = DataLoader(self.dataset.data['valid'], self.train_conf.get('batch_size'), shuffle=False, drop_last=False)
         if self.dataset.data['test']:
@@ -56,14 +61,14 @@ class Experiment:
                 logging.info('Start evaluation of validation data')
                 self.model.eval()
                 with torch.no_grad():
-                    eval_results = self.eval_func(valid_loader, self.model, self.device, self.dataset.data)
+                    eval_results = self.eval_func(valid_loader, self.model, self.device, self.dataset.data, self.eval_desc)
                     self.output_func(eval_results, 'validation')
         if self.do_test:
             print(f'--- test ---')
             logging.info('Start evaluation on test data')
             self.model.eval()
             with torch.no_grad():
-                eval_results = self.eval_func(test_loader, self.model, self.device, self.dataset.data)
+                eval_results = self.eval_func(test_loader, self.model, self.device, self.dataset.data, self.eval_desc)
                 self.output_func(eval_results, 'test')
         if not os.path.exists(self.save_model_path):
             os.makedirs(self.save_model_path)

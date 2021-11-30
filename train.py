@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def train_convX(data, model, optimizer, device):
+def train_without_label(data, model, optimizer, device):
     full_loss = []
     model.train()
     for batch_data in tqdm(data):
@@ -19,7 +19,7 @@ def train_convX(data, model, optimizer, device):
         full_loss.append(loss.item())
     return full_loss
 
-def train_convKB(data, model, optimizer, device):
+def train_with_label(data, model, optimizer, device):
     full_loss = []
     model.train()
     for batch_data in tqdm(data):
