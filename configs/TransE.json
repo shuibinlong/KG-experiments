@@ -12,7 +12,7 @@
       "hidden_dropout": 0.3
     },
     "optimizer": {
-      "algorithm": "adam",
+      "algorithm": "sgd",
       "lr": 0.003,
       "weight_decay": 0.0
     },
