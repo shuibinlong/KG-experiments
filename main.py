@@ -34,10 +34,14 @@ class Experiment:
         else:
             logging.error(f'Could not find any training function for model={self.model_name}')
         opt_conf = config.get('optimizer')
-        if opt_conf.get('algorithm', 'adam') == 'adam':
+        if opt_conf.get('algorithm') == 'adam':
             self.optimizer = torch.optim.Adam(self.model.parameters(), lr=opt_conf.get('lr'), weight_decay=opt_conf.get('weight_decay'))
-        else:
+        elif opt_conf.get('algorithm') == 'sgd':
             self.optimizer = torch.optim.SGD(self.model.parameters(), lr=opt_conf.get('lr'), weight_decay=opt_conf.get('weight_decay'))
+        elif opt_conf.get('algorithm') == 'adagrad':
+            self.optimizer = torch.optim.Adagrad(self.model.parameters(), lr=opt_conf.get('lr'), weight_decay=opt_conf.get('weight_decay'))
+        else:
+            logging.error('Could not find corresponding optimizer for algorithm={}'.format(opt_conf.get('algorithm')))
         self.do_validation = config.get('do_validation')
         self.valid_steps = config.get('valid_steps')
         self.do_test = config.get('do_test')
