@@ -20,9 +20,9 @@ class ConvR(BaseModel):
             'relation': self.conv_out_channels * self.kernel_size[0] * self.kernel_size[1]
         }
         assert self.emb_dim['entity'] == self.reshape[0] * self.reshape[1]
-        self.E = torch.nn.Embedding(self.entity_cnt, self.emb_dim['entity'], padding_idx=0)
-        self.R = torch.nn.Embedding(self.relation_cnt, self.emb_dim['relation'], padding_idx=0)
-        self.input_drop = torch.nn.Dropout(kwargs.get('emb_dropout'))
+        self.E = torch.nn.Embedding(self.entity_cnt, self.emb_dim['entity'])
+        self.R = torch.nn.Embedding(self.relation_cnt, self.emb_dim['relation'])
+        self.input_drop = torch.nn.Dropout(kwargs.get('input_dropout'))
         self.feature_map_drop = torch.nn.Dropout2d(kwargs.get('feature_map_dropout'))
         self.hidden_drop = torch.nn.Dropout(kwargs.get('hidden_dropout'))
         self.bn0 = torch.nn.BatchNorm2d(1)  # batch normalization over a 4D input
@@ -43,9 +43,11 @@ class ConvR(BaseModel):
     
     def forward(self, batch_h, batch_r, batch_t=None):
         batch_size = batch_h.size(0)
+        
         e1 = self.E(batch_h).view(-1, 1, *self.reshape)
         e1 = self.bn0(e1).view(1, -1, *self.reshape)
         e1 = self.input_drop(e1)
+
         r = self.R(batch_r)
         r = self.bn3(r)
         r = self.input_drop(r)
@@ -58,6 +60,7 @@ class ConvR(BaseModel):
         x = self.feature_map_drop(x)
         x = x.view(batch_size, -1)
         x = self.fc(x)
+        x = self.hidden_drop(x)
         x = self.bn2(x)
         x = F.relu(x)
 
