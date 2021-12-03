@@ -11,8 +11,8 @@ class ConvKB(BaseModel):
         self.relation_cnt = config.get('relation_cnt')
         kwargs = config.get('model_hyper_params')
         self.emb_dim = kwargs.get('emb_dim')
-        self.E = torch.nn.Embedding(self.entity_cnt, self.emb_dim, padding_idx=0)
-        self.R = torch.nn.Embedding(self.relation_cnt, self.emb_dim, padding_idx=0)
+        self.E = torch.nn.Embedding(self.entity_cnt, self.emb_dim)
+        self.R = torch.nn.Embedding(self.relation_cnt, self.emb_dim)
         self.input_drop = torch.nn.Dropout(kwargs.get('emb_dropout'))
         self.feature_map_drop = torch.nn.Dropout2d(kwargs.get('feature_map_dropout'))
         self.hidden_drop = torch.nn.Dropout(kwargs.get('hidden_dropout'))
@@ -32,6 +32,8 @@ class ConvKB(BaseModel):
     def init(self):
         torch.nn.init.xavier_normal_(self.E.weight.data)
         torch.nn.init.xavier_normal_(self.R.weight.data)
+        torch.nn.init.xavier_normal_(self.conv1.weight.data)
+        torch.nn.init.xavier_normal_(self.fc.weight.data)
 
     def forward(self, batch_h, batch_r, batch_t, batch_y=None):
         batch_size = batch_h.size(0)
@@ -55,7 +57,7 @@ class ConvKB(BaseModel):
 class ConvKBLoss(BaseModel):
     def __init__(self):
         super().__init__()
-        self.loss = torch.nn.SoftMarginLoss(reduction='sum')
+        self.loss = torch.nn.SoftMarginLoss()
     
     def forward(self, predict, label=None):
         loss = None
