@@ -59,17 +59,23 @@ def output_eval_tail(results, data_name):
 def eval_for_both(eval_data, model, device, data, descending):
     hits_h_raw = []
     hits_t_raw = []
+    hits_raw = []
     hits_h_filtered = []
     hits_t_filtered = []
+    hits_filtered = []
     ranks_h_raw = []
     ranks_t_raw = []
+    ranks_raw = []
     ranks_h_filtered = []
     ranks_t_filtered = []
+    ranks_filtered = []
     for _ in range(10):  # need at most Hits@10
         hits_h_raw.append([])
         hits_t_raw.append([])
+        hits_raw.append([])
         hits_h_filtered.append([])
         hits_t_filtered.append([])
+        hits_filtered.append([])
 
     ent_rel_multi_h = data['entity_relation']['as_head']
     ent_rel_multi_t = data['entity_relation']['as_tail']
@@ -151,28 +157,41 @@ def eval_for_both(eval_data, model, device, data, descending):
             # rank+1, since the rank starts with 1 not 0
             ranks_h_raw.append(rank_h_r + 1)
             ranks_t_raw.append(rank_t_r + 1)
+            ranks_raw.append(rank_h_r + 1)
+            ranks_raw.append(rank_t_r + 1)
             ranks_h_filtered.append(rank_h_f + 1)
             ranks_t_filtered.append(rank_t_f + 1)
+            ranks_filtered.append(rank_h_f + 1)
+            ranks_filtered.append(rank_t_f + 1)
 
             for hits_level in range(10):
                 if rank_h_r <= hits_level:
                     hits_h_raw[hits_level].append(1.0)
+                    hits_raw[hits_level].append(1.0)
                 else:
                     hits_h_raw[hits_level].append(0.0)
+                    hits_raw[hits_level].append(0.0)
                 if rank_t_r <= hits_level:
                     hits_t_raw[hits_level].append(1.0)
+                    hits_raw[hits_level].append(1.0)
                 else:
                     hits_t_raw[hits_level].append(0.0)
+                    hits_raw[hits_level].append(0.0)
                 if rank_h_f <= hits_level:
                     hits_h_filtered[hits_level].append(1.0)
+                    hits_filtered[hits_level].append(1.0)
                 else:
                     hits_h_filtered[hits_level].append(0.0)
+                    hits_filtered[hits_level].append(0.0)
                 if rank_t_f <= hits_level:
                     hits_t_filtered[hits_level].append(1.0)
+                    hits_filtered[hits_level].append(1.0)
                 else:
                     hits_t_filtered[hits_level].append(0.0)
+                    hits_filtered[hits_level].append(0.0)
 
-    return [hits_t_filtered, ranks_t_filtered, hits_h_filtered, hits_t_raw, hits_h_raw, ranks_h_filtered, ranks_t_raw, ranks_h_raw]
+    return [hits_t_filtered, ranks_t_filtered, hits_h_filtered, hits_t_raw, hits_h_raw, ranks_h_filtered, ranks_t_raw, ranks_h_raw, \
+            hits_raw, hits_filtered, ranks_raw, ranks_filtered]
 
 def output_eval_both(results, data_name):
     hits_t_filtered = np.array(results[0])
@@ -183,11 +202,17 @@ def output_eval_both(results, data_name):
     ranks_h_filtered = np.array(results[5])
     ranks_t_raw = np.array(results[6])
     ranks_h_raw = np.array(results[7])
+    hits_raw = np.array(results[8])
+    hits_filtered = np.array(results[9])
+    ranks_raw = np.array(results[10])
+    ranks_filtered = np.array(results[11])
 
     r_ranks_t_filtered = 1.0 / ranks_t_filtered
     r_ranks_h_filtered = 1.0 / ranks_h_filtered
+    r_ranks_filtered = 1.0 / ranks_filtered
     r_ranks_t_raw = 1.0 / ranks_t_raw
     r_ranks_h_raw = 1.0 / ranks_h_raw
+    r_ranks_raw = 1.0 / ranks_raw
 
     # print Hits@10, Hits@3, Hits@1, MR (mean rank), and MRR (mean reciprocal rank) respectively for
     # replacing the head/tail entity, filtered/raw
@@ -206,3 +231,12 @@ def output_eval_both(results, data_name):
     print('- raw: Hits@10=%.4f - Hits@3=%.4f - Hits@1=%.4f' %
                  (hits_t_raw[9].mean(), hits_t_raw[2].mean(), hits_t_raw[0].mean()))
     print('- raw: MR=%.4f - MRR=%.4f' % (ranks_t_raw.mean(), r_ranks_t_raw.mean()))
+
+    print('Evaluation average results for %s data: ' % data_name)
+    print('- filtered: Hits@10=%.4f - Hits@3=%.4f - Hits@1=%.4f' %
+                 (hits_filtered[9].mean(), hits_filtered[2].mean(), hits_filtered[0].mean()))
+    print('- filtered: MR=%.4f - MRR=%.4f' % (ranks_filtered.mean(), r_ranks_filtered.mean()))
+    print('- raw: Hits@10=%.4f - Hits@3=%.4f - Hits@1=%.4f' %
+                 (hits_raw[9].mean(), hits_raw[2].mean(), hits_raw[0].mean()))
+    print('- raw: MR=%.4f - MRR=%.4f' % (ranks_raw.mean(), r_ranks_raw.mean()))
+

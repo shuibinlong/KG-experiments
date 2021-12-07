@@ -86,6 +86,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     config = load_json_config(args.config_file)
+    print(config)
 
     experiment = Experiment(config)
     experiment.train_and_eval()
