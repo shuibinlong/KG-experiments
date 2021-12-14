@@ -80,33 +80,21 @@ def eval_for_both(eval_data, model, device, data, descending):
     ent_rel_multi_h = data['entity_relation']['as_head']
     ent_rel_multi_t = data['entity_relation']['as_tail']
 
-    def head_corrupt_score(triple, model, device, ent_data):
-        '''
-        Replace the head entity by each of the entities and compute the score of each corrupted triple.
-        Then sort the scores by ascending order.
-        Return a list of indices representing the order of entity ids with scores from smallest to largest.
-        '''
-        ent_count = len(ent_data)
-        test_h = torch.tensor(ent_data).to(device)
-        test_t = triple[1].repeat(ent_count).to(device)  # keep the tail entity
-        test_r = triple[2].repeat(ent_count).to(device)  # keep the relation
-        _, score = model.forward(test_h, test_r, test_t)  # score is of size ent_count
-        # score_sort_idx = sorted(range(len(score)), key=score.__getitem__)  # index of the sorted score
+    def head_corrupt_score(triple):
+        entity_cnt = len(data['entity'])
+        test_h = torch.tensor(data['entity']).to(device)
+        test_t = triple[1].repeat(entity_cnt).to(device)  # keep the tail entity
+        test_r = triple[2].repeat(entity_cnt).to(device)  # keep the relation
+        _, score = model(test_h, test_r, test_t)  # score is of size ent_count
         return score
 
 
-    def tail_corrupt_score(triple, model, device, ent_data):
-        '''
-        Replace the tail entity by each of the entities and compute the score of each corrupted triple.
-        Then sort the scores by ascending order.
-        Return a list of indices representing the order of entity ids with scores from smallest to largest.
-        '''
-        ent_count = len(ent_data)
-        test_h = triple[0].repeat(ent_count).to(device)  # keep the head entity
-        test_t = torch.tensor(ent_data).to(device)
-        test_r = triple[2].repeat(ent_count).to(device)  # keep the relation
+    def tail_corrupt_score(triple):
+        entity_cnt = len(data['entity'])
+        test_h = triple[0].repeat(entity_cnt).to(device)  # keep the head entity
+        test_t = torch.tensor(data['entity']).to(device)
+        test_r = triple[2].repeat(entity_cnt).to(device)  # keep the relation
         _, score = model.forward(test_h, test_r, test_t)
-        # score_sort_idx = sorted(range(len(score)), key=score.__getitem__)
         return score
 
     for batch_data in tqdm(eval_data):
@@ -118,9 +106,9 @@ def eval_for_both(eval_data, model, device, data, descending):
             r = batch_data[2][i].item()
 
             # get the score of all corrupted triples by replacing the head entity by each of the entities
-            h_score = head_corrupt_score(triple, model, device, data['entity'])  # h_score: (ent_count)
+            h_score = head_corrupt_score(triple)  # h_score: (ent_count)
             # get the score of all corrupted triples by replacing the tail entity by each of the entities
-            t_score = tail_corrupt_score(triple, model, device, data['entity'])  # h_score: (ent_count)
+            t_score = tail_corrupt_score(triple)  # h_score: (ent_count)
 
             _, h_score_idx = torch.sort(h_score, descending=descending)
             _, t_score_idx = torch.sort(t_score, descending=descending)
@@ -130,16 +118,12 @@ def eval_for_both(eval_data, model, device, data, descending):
             rank_h_r = np.where(h_score_idx == h)[0][0]  # get the raw rank of the true head entity
             rank_t_r = np.where(t_score_idx == t)[0][0]  # get the raw rank of the true tail entity
 
-            # need to filter out the entities ranking above the target entity that form a
-            # true (head, tail) entity pair in train/valid/test data
-            # get all head entities that form triples with r as the tail entity and r as the relation
             filter_h = ent_rel_multi_h[t][r]
             score_value_h = h_score[h].item()
             h_score_f = h_score.min().item() - 1.0 if descending else h_score.max().item() + 1.0
             h_score[filter_h] = h_score_f
             h_score[h] = score_value_h
 
-            # get all tail entities that form triples with h as the head entity and r as the relation
             filter_t = ent_rel_multi_t[h][r]
             score_value_t = t_score[t].item()
             t_score_f = t_score.min().item() - 1.0 if descending else t_score.max().item() + 1.0
@@ -154,7 +138,6 @@ def eval_for_both(eval_data, model, device, data, descending):
             rank_h_f = np.where(h_score_idx == h)[0][0]  # get the filtered rank of the true head entity
             rank_t_f = np.where(t_score_idx == t)[0][0]  # get the filtered rank of the true tail entity
 
-            # rank+1, since the rank starts with 1 not 0
             ranks_h_raw.append(rank_h_r + 1)
             ranks_t_raw.append(rank_t_r + 1)
             ranks_raw.append(rank_h_r + 1)
@@ -177,6 +160,129 @@ def eval_for_both(eval_data, model, device, data, descending):
                 else:
                     hits_t_raw[hits_level].append(0.0)
                     hits_raw[hits_level].append(0.0)
+                if rank_h_f <= hits_level:
+                    hits_h_filtered[hits_level].append(1.0)
+                    hits_filtered[hits_level].append(1.0)
+                else:
+                    hits_h_filtered[hits_level].append(0.0)
+                    hits_filtered[hits_level].append(0.0)
+                if rank_t_f <= hits_level:
+                    hits_t_filtered[hits_level].append(1.0)
+                    hits_filtered[hits_level].append(1.0)
+                else:
+                    hits_t_filtered[hits_level].append(0.0)
+                    hits_filtered[hits_level].append(0.0)
+
+    return [hits_t_filtered, ranks_t_filtered, hits_h_filtered, hits_t_raw, hits_h_raw, ranks_h_filtered, ranks_t_raw, ranks_h_raw, \
+            hits_raw, hits_filtered, ranks_raw, ranks_filtered]
+
+def eval_for_both_batch(eval_data, model, device, data, descending):
+    hits_h_raw = []
+    hits_t_raw = []
+    hits_raw = []
+    hits_h_filtered = []
+    hits_t_filtered = []
+    hits_filtered = []
+    ranks_h_raw = []
+    ranks_t_raw = []
+    ranks_raw = []
+    ranks_h_filtered = []
+    ranks_t_filtered = []
+    ranks_filtered = []
+    for _ in range(10):  # need at most Hits@10
+        hits_h_raw.append([])
+        hits_t_raw.append([])
+        hits_raw.append([])
+        hits_h_filtered.append([])
+        hits_t_filtered.append([])
+        hits_filtered.append([])
+
+    ent_rel_multi_h = data['entity_relation']['as_head']
+    ent_rel_multi_t = data['entity_relation']['as_tail']
+
+    def head_corrupt_score(batch_size, eval_h, eval_t, eval_r):
+        entity_cnt = len(data['entity'])
+        test_h = torch.tensor(data['entity']).to(device).unsqueeze(0).repeat_interleave(batch_size, 0) # (batch, entity_cnt, dim)
+        test_t = eval_t.unsqueeze(1).repeat_interleave(entity_cnt, 1) # (batch, entity_cnt, dim)
+        test_r = eval_r.unsqueeze(1).repeat_interleave(entity_cnt, 1) # (batch, entity_cnt, dim)
+        _, score = model(test_h, test_r, test_t)
+        return score
+    
+    def tail_corrupt_score(batch_size, eval_h, eval_t, eval_r):
+        entity_cnt = len(data['entity'])
+        test_h = eval_h.unsqueeze(1).repeat_interleave(entity_cnt, 1) # (batch, entity_cnt, dim)
+        test_t = torch.tensor(data['entity']).to(device).unsqueeze(0).repeat_interleave(batch_size, 0) # (batch, entity_cnt, dim)
+        test_r = eval_r.unsqueeze(1).repeat_interleave(entity_cnt, 1) # (batch, entity_cnt, dim)
+        _, score = model(test_h, test_r, test_t)
+        return score
+
+    for batch_idx, batch_data in enumerate(tqdm(eval_data)):
+        batch_size = batch_data[0].size(0)
+        eval_h = batch_data[0].to(device) # (batch, emb_dim)
+        eval_t = batch_data[1].to(device) # (batch, emb_dim)
+        eval_r = batch_data[2].to(device) # (batch, emb_dim)
+
+        h_score = head_corrupt_score(batch_size, eval_h, eval_t, eval_r) # (batch, entity_cnt)
+        t_score = tail_corrupt_score(batch_size, eval_h, eval_t, eval_r)
+
+        _, h_score_idx = torch.sort(h_score, 1, descending)
+        _, t_score_idx = torch.sort(t_score, 1, descending)
+        h_score_idx = h_score_idx.cpu().numpy()
+        t_score_idx = t_score_idx.cpu().numpy()
+        
+        for i in range(batch_size):
+            h = eval_h[i].item()
+            r = eval_r[i].item()
+            t = eval_t[i].item()
+            rank_h_r = np.where(h_score_idx[i] == h)[0][0]
+            rank_t_r = np.where(t_score_idx[i] == t)[0][0]
+
+            filter_h = ent_rel_multi_h[t][r]
+            pos_score_h = h_score[i][h].item()
+            h_score_f = h_score[i].min().item() - 1.0 if descending else h_score[i].max().item() + 1.0
+            h_score[i][filter_h] = h_score_f
+            h_score[i][h] = pos_score_h
+
+            filter_t = ent_rel_multi_t[h][r]
+            pos_score_t = t_score[i][t].item()
+            t_score_f = t_score[i].min().item() - 1.0 if descending else t_score[i].max().item() + 1.0
+            t_score[i][filter_t] = t_score_f
+            t_score[i][t] = pos_score_t
+
+            ranks_h_raw.append(rank_h_r + 1)
+            ranks_t_raw.append(rank_t_r + 1)
+            ranks_raw.append(rank_h_r + 1)
+            ranks_raw.append(rank_t_r + 1)
+
+            for hits_level in range(10):
+                if rank_h_r <= hits_level:
+                    hits_h_raw[hits_level].append(1.0)
+                    hits_raw[hits_level].append(1.0)
+                else:
+                    hits_h_raw[hits_level].append(0.0)
+                    hits_raw[hits_level].append(0.0)
+                if rank_t_r <= hits_level:
+                    hits_t_raw[hits_level].append(1.0)
+                    hits_raw[hits_level].append(1.0)
+                else:
+                    hits_t_raw[hits_level].append(0.0)
+                    hits_raw[hits_level].append(0.0)
+        
+        _, h_score_idx = torch.sort(h_score, 1, descending)
+        _, t_score_idx = torch.sort(t_score, 1, descending)
+        h_score_idx = h_score_idx.cpu().numpy()
+        t_score_idx = t_score_idx.cpu().numpy()
+
+        for i in range(batch_size):
+            rank_h_f = np.where(h_score_idx[i] == eval_h[i].item())[0][0]
+            rank_t_f = np.where(t_score_idx[i] == eval_t[i].item())[0][0]
+
+            ranks_h_filtered.append(rank_h_f + 1)
+            ranks_t_filtered.append(rank_t_f + 1)
+            ranks_filtered.append(rank_h_f + 1)
+            ranks_filtered.append(rank_t_f + 1)
+
+            for hits_level in range(10):
                 if rank_h_f <= hits_level:
                     hits_h_filtered[hits_level].append(1.0)
                     hits_filtered[hits_level].append(1.0)

@@ -1,8 +1,5 @@
 {
     "dataset": "FB15K237",
-    "do_validation": true,
-    "do_test": true,
-    "valid_steps": 50,
     "model_name": "ConvR",
     "model_hyper_params": {
       "emb_dim": 100,
@@ -21,11 +18,18 @@
       "lr": 0.003,
       "weight_decay": 0.0
     },
-    "training": {
+    "train": {
       "batch_size": 128,
       "epochs": 200,
       "seed": 123,
       "pretrain_model": null
+    },
+    "eval": {
+      "do_validation": true,
+      "do_test": true,
+      "valid_steps": 50,
+      "batch_size": 128,
+      "eval_func": "eval_for_tail"
     },
     "seed": 123,
     "save_model_path": "./output"
