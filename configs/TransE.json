@@ -2,7 +2,7 @@
     "dataset": "FB15K237",
     "do_validation": true,
     "do_test": true,
-    "valid_steps": 100,
+    "valid_steps": 50,
     "model_name": "TransE",
     "model_hyper_params": {
       "emb_dim": 50,
@@ -10,12 +10,12 @@
       "p_norm": 1
     },
     "optimizer": {
-      "algorithm": "adam",
+      "algorithm": "sgd",
       "lr": 0.001,
       "weight_decay": 0.0
     },
     "training": {
-      "batch_size": 128,
+      "batch_size": 256,
       "epochs": 1000,
       "shuffle": false,
       "neg_ratio": 1,

@@ -24,9 +24,9 @@ class TransE(BaseModel):
         torch.nn.init.xavier_normal_(self.R.weight.data)
     
     def forward(self, batch_h, batch_r, batch_t, batch_y=None):
-        h = self.bn(self.E(batch_h)) # (batch, emb_dim)
-        r = self.bn(self.R(batch_r))
-        t = self.bn(self.E(batch_t))
+        h = self.E(batch_h) # (batch, emb_dim)
+        r = self.R(batch_r)
+        t = self.E(batch_t)
 
         x = torch.norm(h + r - t, self.p_norm, dim=-1)
         return self.loss(x, batch_y), x

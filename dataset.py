@@ -58,9 +58,7 @@ class Dataset:
                 self.data['entity_relation']['as_head'][i][j] = []
                 self.data['entity_relation']['as_tail'][i][j] = []
         for triple in full_data:
-            h = triple[0]
-            t = triple[1]
-            r = triple[2]
+            h, t, r = triple
             self.data['entity_relation']['as_head'][t][r].append(h)
             self.data['entity_relation']['as_tail'][h][r].append(t)
 
@@ -69,8 +67,8 @@ class Dataset:
         train_data = []
         entity_set = set(self.data['entity'])
         for triple in tqdm(self.data['train'], total=len(self.data['train'])):
-            train_data.append([*triple, 1]) # positive
             h, t, r = triple
+            train_data.append([h, t, r, 1]) # positive
             if batching:
                 h_neg_sampling = random.sample(entity_set - set(self.data['entity_relation']['as_head'][t][r]), (neg_ratio + 1) // 2)
                 t_neg_sampling = random.sample(entity_set - set(self.data['entity_relation']['as_tail'][h][r]), (neg_ratio + 1) // 2)
