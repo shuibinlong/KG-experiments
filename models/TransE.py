@@ -1,3 +1,4 @@
+from numpy import e
 import torch
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
@@ -13,6 +14,7 @@ class TransE(BaseModel):
         self.emb_dim = kwargs.get('emb_dim')
         self.E = torch.nn.Embedding(self.entity_cnt, self.emb_dim)
         self.R = torch.nn.Embedding(self.relation_cnt, self.emb_dim)
+        self.bn = torch.nn.BatchNorm1d(self.emb_dim)
         self.p_norm = kwargs.get('p_norm')
         self.loss = TransELoss(self.device, kwargs.get('margin'))
         self.init()
@@ -22,18 +24,18 @@ class TransE(BaseModel):
         torch.nn.init.xavier_normal_(self.R.weight.data)
     
     def forward(self, batch_h, batch_r, batch_t, batch_y=None):
-        h = self.E(batch_h)
-        r = self.R(batch_r)
-        t = self.E(batch_t)
+        h = self.bn(self.E(batch_h)) # (batch, emb_dim)
+        r = self.bn(self.R(batch_r))
+        t = self.bn(self.E(batch_t))
 
-        x = torch.norm(h + r - t, self.p_norm, 1)
+        x = torch.norm(h + r - t, self.p_norm, dim=-1)
         return self.loss(x, batch_y), x
     
 class TransELoss(BaseModel):
     def __init__(self, device, margin):
         super().__init__()
         self.device = device
-        self.loss = torch.nn.MarginRankingLoss(margin, False)
+        self.loss = torch.nn.MarginRankingLoss(margin, reduction='sum')
     
     def forward(self, predict, label=None):
         loss = None

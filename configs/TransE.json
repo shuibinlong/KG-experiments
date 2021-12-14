@@ -2,29 +2,28 @@
     "dataset": "FB15K237",
     "do_validation": true,
     "do_test": true,
-    "valid_steps": 1,
+    "valid_steps": 100,
     "model_name": "TransE",
     "model_hyper_params": {
-      "emb_dim": 200,
-      "margin": 0.5,
-      "p_norm": 2,
-      "emb_dropout": 0.2,
-      "hidden_dropout": 0.3
+      "emb_dim": 50,
+      "margin": 1.0,
+      "p_norm": 1
     },
     "optimizer": {
-      "algorithm": "sgd",
-      "lr": 0.003,
+      "algorithm": "adam",
+      "lr": 0.001,
       "weight_decay": 0.0
     },
     "training": {
-      "batch_size": 1024,
-      "epochs": 5,
+      "batch_size": 128,
+      "epochs": 1000,
       "shuffle": false,
       "neg_ratio": 1,
       "batch_sample": false,
       "seed": 123,
       "pretrain_model": null
     },
+    "eval_batch_size": 64,
     "eval_desc": false,
     "seed": 123,
     "save_model_path": "./output"
