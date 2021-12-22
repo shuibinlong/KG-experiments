@@ -12,6 +12,7 @@
       "weight_decay": 0.0
     },
     "train": {
+      "train_func": "train_with_label",
       "batch_size": 256,
       "epochs": 200,
       "shuffle": false,
@@ -26,6 +27,7 @@
       "valid_steps": 10,
       "batch_size": 64,
       "eval_func": "eval_for_both_batch",
+      "output_func": "output_eval_both",
       "scoring_desc": false
     },
     "seed": 123,

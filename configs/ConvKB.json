@@ -1,34 +1,41 @@
 {
     "dataset": "FB15K237",
-    "do_validation": true,
-    "do_test": true,
-    "valid_steps": 50,
     "model_name": "ConvKB",
     "model_hyper_params": {
         "emb_dim": 100,
         "conv_out_channels": 50,
-        "conv_kernel_size": [3, 1],
+        "conv_kernel_size": [1, 3],
         "stride": 1,
-        "emb_dropout": 0.2,
-        "feature_map_dropout": 0.2,
+        "input_dropout": 0.0,
+        "feature_map_dropout": 0.5,
         "hidden_dropout": 0.3,
-        "use_bias": true
+        "use_bias": false,
+        "reg": 0.1
     },
     "optimizer": {
         "algorithm": "adam",
-        "lr": 0.001,
-        "weight_decay": 1e-5
+        "lr": 0.003,
+        "weight_decay": 0
     },
-    "training": {
-        "batch_size": 256,
-        "epochs": 200,
+    "train": {
+        "train_func": "train_with_label",
+        "batch_size": 512,
+        "epochs": 2,
         "neg_ratio": 10,
         "batch_sample": true,
-        "shuffle": true,
+        "shuffle": false,
         "seed": 123,
         "pretrain_model": null
     },
-    "eval_desc": true,
+    "eval": {
+        "do_validate": true,
+        "do_test": true,
+        "valid_steps": 1,
+        "batch_size": 512,
+        "eval_func": "eval_for_both",
+        "output_func": "output_eval_both",
+        "scoring_desc": true
+    },
     "seed": 123,
     "save_model_path": "./output"
 }

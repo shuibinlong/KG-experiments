@@ -10,10 +10,20 @@ from dataset import *
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+train_dict = {
+    'train_with_label': train_with_label,
+    'train_without_label': train_without_label
+}
+
 eval_dict = {
     'eval_for_tail': eval_for_tail,
     'eval_for_both': eval_for_both,
     'eval_for_both_batch': eval_for_both_batch
+}
+
+output_dict = {
+    'output_eval_tail': output_eval_tail,
+    'output_eval_both': output_eval_both
 }
 
 class Experiment:
@@ -29,15 +39,9 @@ class Experiment:
         config['entity_cnt'] = len(self.dataset.data['entity'])
         config['relation_cnt'] = len(self.dataset.data['relation'])
         self.model, self.device = init_model(config)
+        self.train_func = train_dict[self.train_conf.get('train_func')]
         self.eval_func = eval_dict[self.eval_conf.get('eval_func')]
-        if self.model_name in ['ConvE', 'ConvR']:
-            self.train_func = train_without_label
-            self.output_func = output_eval_tail
-        elif self.model_name in ['ConvKB', 'TransE']:
-            self.train_func = train_with_label
-            self.output_func = output_eval_both
-        else:
-            logging.error(f'Could not find any training function for model={self.model_name}')
+        self.output_func = output_dict[self.eval_conf.get('output_func')]
         opt_conf = config.get('optimizer')
         if opt_conf.get('algorithm') == 'adam':
             self.optimizer = torch.optim.Adam(self.model.parameters(), lr=opt_conf.get('lr'), weight_decay=opt_conf.get('weight_decay'))
@@ -62,7 +66,7 @@ class Experiment:
             end_time = time.time()
             mean_loss = np.mean(epoch_loss)
             print('[Epoch #%d] training loss: %f - training time: %.2f seconds' % (epoch + 1, mean_loss, end_time - start_time))
-            if self.eval_conf.get('do_validation') and (epoch + 1) % self.eval_conf.get('valid_steps') == 0:
+            if self.eval_conf.get('do_validate') and (epoch + 1) % self.eval_conf.get('valid_steps') == 0:
                 print(f'--- epoch #{epoch + 1} valid ---')
                 logging.info('Start evaluation of validation data')
                 self.model.eval()

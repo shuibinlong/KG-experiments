@@ -32,7 +32,7 @@ class ConvR(BaseModel):
         self.register_parameter('b', Parameter(torch.zeros(self.entity_cnt)))
         self.filtered = [(self.reshape[0] - self.kernel_size[0]) // self.stride + 1,
                          (self.reshape[1] - self.kernel_size[1]) // self.stride + 1]
-        fc_length = self.conv_out_channels * self.filtered[0] * self.filtered[1]
+        fc_length = self.filtered[0] * self.filtered[1]
         self.fc = torch.nn.Linear(fc_length, self.emb_dim['entity'])
         self.loss = ConvRLoss(self.device, kwargs.get('label_smoothing'), self.entity_cnt)
         self.init()
@@ -58,6 +58,7 @@ class ConvR(BaseModel):
         x = self.bn1(x)
         x = F.relu(x)
         x = self.feature_map_drop(x)
+        x = x.sum(dim=1)
         x = x.view(batch_size, -1)
         x = self.fc(x)
         x = self.hidden_drop(x)

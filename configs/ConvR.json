@@ -19,17 +19,19 @@
       "weight_decay": 0.0
     },
     "train": {
+      "train_func": "train_without_label",
       "batch_size": 128,
       "epochs": 200,
       "seed": 123,
       "pretrain_model": null
     },
     "eval": {
-      "do_validation": true,
+      "do_validate": true,
       "do_test": true,
       "valid_steps": 50,
       "batch_size": 128,
-      "eval_func": "eval_for_tail"
+      "eval_func": "eval_for_tail",
+      "output_func": "output_eval_tail"
     },
     "seed": 123,
     "save_model_path": "./output"
