@@ -1,6 +1,7 @@
 import os
 import json
 import torch
+import numpy as np
 import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -45,3 +46,12 @@ def load_ids(file_path):
                     id = record.split(' ')[-1]
                 ids.append(int(id))
     return ids
+
+def load_init_embs(file_path):
+    embs = []
+    with open(file_path) as f:
+        data = f.readlines()
+        logging.info('%d of embs loaded from %s.' % (len(data), file_path))
+        for line in data:
+            embs.append([float(x) for x in line.strip().split()])
+    return np.array(embs, dtype=np.float32)

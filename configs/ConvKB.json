@@ -10,7 +10,11 @@
         "feature_map_dropout": 0.5,
         "hidden_dropout": 0.3,
         "use_bias": false,
-        "reg": 0.1
+        "reg": 0.1,
+        "init": {
+            "entity": "data/FB15K237/entity2vec100.init",
+            "relation": "data/FB15K237/relation2vec100.init"
+        }
     },
     "optimizer": {
         "algorithm": "adam",
@@ -24,8 +28,7 @@
         "neg_ratio": 10,
         "batch_sample": true,
         "shuffle": false,
-        "seed": 123,
-        "pretrain_model": null
+        "seed": 123
     },
     "eval": {
         "do_validate": true,

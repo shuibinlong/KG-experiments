@@ -2,6 +2,7 @@ import torch
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
 from .BaseModel import BaseModel
+from utils import load_init_embs
 
 class ConvKB(BaseModel):
     def __init__(self, config):
@@ -30,10 +31,15 @@ class ConvKB(BaseModel):
         self.init()
 
     def init(self):
-        torch.nn.init.xavier_normal_(self.E.weight.data)
-        torch.nn.init.xavier_normal_(self.R.weight.data)
         torch.nn.init.xavier_normal_(self.conv1.weight.data)
         torch.nn.init.xavier_normal_(self.fc.weight.data)
+        iargs = self.config['model_hyper_params'].get('init')
+        if iargs is not None:
+            self.E.weight.data = torch.from_numpy(load_init_embs(iargs.get('entity')))
+            self.R.weight.data = torch.from_numpy(load_init_embs(iargs.get('relation')))
+        else:
+            torch.nn.init.xavier_normal_(self.E.weight.data)
+            torch.nn.init.xavier_normal_(self.R.weight.data)
 
     def forward(self, batch_h, batch_r, batch_t, batch_y=None):
         batch_size = batch_h.size(0)
@@ -58,7 +64,7 @@ class ConvKB(BaseModel):
 class ConvKBLoss(BaseModel):
     def __init__(self, config):
         super().__init__()
-        self.loss = torch.nn.SoftMarginLoss()
+        self.loss = torch.nn.SoftMarginLoss(reduction='sum')
         self.alpha = config.get('reg')
     
     def forward(self, predict, label=None, reg=0.0):
